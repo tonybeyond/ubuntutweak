@@ -61,9 +61,8 @@ install_git () {
 
 # Function to install other packages
 install_other_packages () {
-    local packages=("fish" "gnome-tweaks" "btop" "neofetch" "gnome-shell-extension-appindicator" "gnome-shell-extension-manager" "curl" "wget" "build-essential" "neovim" "node-typescript" "bat" "exa" "nala" "vlc" "dconf-editor")
+    local packages=("fish" "gnome-tweaks" "btop" "neofetch" "flameshot" "xclip" "gimagereader" "tesseract-ocr" "tesseract-ocr-fra" "tesseract-ocr-eng" "gnome-shell-extension-appindicator" "gnome-shell-extension-manager" "curl" "wget" "build-essential" "neovim" "node-typescript" "bat" "exa" "nala" "vlc" "dconf-editor")
     local failed_packages=()
-
     for package in "${packages[@]}"; do
         echo "Checking if $package is installed..."
         if ! is_package_installed "$package"; then
