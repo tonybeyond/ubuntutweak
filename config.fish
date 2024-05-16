@@ -220,5 +220,5 @@ alias playmp4='vlc *.mp4'
 ### SETTING THE STARSHIP PROMPT ###
 starship init fish | source
 
-### neofetch
-neofetch
+### hyfetch
+hyfetch
