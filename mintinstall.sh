@@ -67,7 +67,7 @@ required_packages=(
     "gnome-shell-extension-appindicator" "gnome-shell-extension-manager"
     "curl" "wget" "build-essential" "node-typescript" "bat" "exa"
     "nala" "vlc" "nextcloud-desktop" "ninja-build" "gettext" "cmake"
-    "unzip" "fzf" "remmina" "fd-find" "pipx"
+    "unzip" "fzf" "remmina" "fd-find" "pipx" "ffmpeg"
 )
 
 # Function to install required packages
