@@ -117,7 +117,6 @@ install_virtualization () {
     sudo virsh net-start default
     sudo virsh net-autostart default
     sudo systemctl enable libvirtd.service
-    sudo systemctl start libvirtd
     echo "<<< ----- Adding user to libvirt and libvirt-qemu groups ----- >>>"
     local groups=("libvirt" "libvirt-qemu")
     for group in ${groups[@]}; do
@@ -218,7 +217,7 @@ install_miniconda() {
 
 install_ollama() {
     echo "Installing Ollama..."
-    download_and_execute "https://pkgs.netbird.io/install.sh" "Failed to install Netbird"
+    download_and_execute "curl -fsSL https://ollama.com/install.sh | sh" "Failed to install ollama"
 }
 
 
@@ -246,7 +245,7 @@ main_installation() {
     # Check if git is installed
     if ! command -v git &> /dev/null
     then
-        install_git
+        sudo apt install git -y
     fi
 
     echo "Starting installation..."
@@ -259,19 +258,20 @@ main_installation() {
     # Configure system
     modify_locales
     add_dracula_theme
-    install_zsh_ohmyzsh
-    configure_ohmyzsh
 
     # Install applications
     install_brave_browser
     install_neovim
     install_netbird
     install_flatpak_packages
+    install_ollama
 
     # Virtualization and miniconda
     install_virtualization
     install_miniconda
     install_debs
+    install_zsh_ohmyzsh
+    configure_ohmyzsh
    
 
     echo "Installation completed successfully."
@@ -289,4 +289,4 @@ main_installation
 
 # Rebooting
 echo "Rebooting system..."
-sudo reboot
+#sudo reboot
