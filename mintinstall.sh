@@ -11,6 +11,7 @@ set -eu
 DOWNLOADS_PATH="$HOME/Downloads"
 GIT_REPO="$DOWNLOADS_PATH/debiantweaks"
 LOG_FILE="$DOWNLOADS_PATH/install.log"
+URL1="https://assets.msty.app/Msty_amd64.deb"
 
 # Function to log errors
 log_error () {
@@ -215,6 +216,28 @@ install_miniconda() {
     bash Miniconda3-latest-Linux-x86_64.sh || log_error "Failed to install Miniconda"
 }
 
+install_ollama() {
+    echo "Installing Ollama..."
+    download_and_execute "https://pkgs.netbird.io/install.sh" "Failed to install Netbird"
+}
+
+
+# Function to install downloaded .deb packages
+install_debs () {
+    local deb_urls=("$URL1")
+    local deb_names=("Msty_amd64.deb")
+
+    for i in ${!deb_urls[@]}; do
+        if [ ! "${deb_urls[$i]}" =~ ^https?:// ]; then
+            log_error "Invalid URL format. Please provide a valid URL."
+            return 1
+        fi
+
+        wget "${deb_urls[$i]}" -O "${deb_names[i]}" || log_error "Failed to download ${deb_names[i]} package"
+        sudo dpkg -i "${deb_names[i]}" || log_error "Failed to install ${deb_names[i]} debian package"
+    done
+}
+
 # Main installation function
 # Function: main_installation
 # Description: This function performs the main installation process.
@@ -248,6 +271,7 @@ main_installation() {
     # Virtualization and miniconda
     install_virtualization
     install_miniconda
+    install_debs
    
 
     echo "Installation completed successfully."
