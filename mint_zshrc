@@ -75,14 +75,16 @@ plugins=(
 	fzf
 	vscode
 	z
-	eza
 	zsh-autocomplete
 	zsh-syntax-highlighting
 )
 
 # Autocompletion settings
-zstyle ':completion:*' menu select
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+#zstyle ':completion:*' menu select
+#zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zle -N insert-unambiguous-or-complete
+zle -N menu-search
+zle -N recent-paths
 
 source $ZSH/oh-my-zsh.sh
 
