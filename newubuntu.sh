@@ -78,6 +78,7 @@ install_git() {
 # Function to install other packages
 install_other_packages() {
   local packages=(
+    "curl"
     "zsh*"
     "wezterm" 
     "gnome-tweaks"
@@ -100,6 +101,7 @@ install_other_packages() {
     "nala"
     "vlc"
     "eza"
+    "fzf"
   )
   local failed_packages=()
 
