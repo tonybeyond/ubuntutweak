@@ -197,3 +197,5 @@ export PATH=$PATH:/home/uby/go/bin
 
 # some define alias for fabric user frindly approach
 alias ytsum='function _ytsum() { fabric -y "$1" --stream --pattern summarize; }; _ytsum'
+alias claims='xclip -selection clipboard -o | fabric --stream --pattern analyze_claims'
+alias summarize='xclip -selection clipboard -o | fabric --stream --pattern summarize'
