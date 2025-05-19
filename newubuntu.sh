@@ -7,7 +7,7 @@ set -eu
 downloads_path="$HOME/Downloads"
 git_repo="$downloads_path/ubuntutweak-main"
 log_file="$downloads_path/install.log"
-url1="https://builds.parsec.app/package/parsec-linux.deb"
+url1="https://packages.microsoft.com/repos/edge/pool/main/m/microsoft-edge-stable/microsoft-edge-stable_136.0.3240.76-1_amd64.deb?brand=M102"
 
 # Function to log errors
 log_error() {
@@ -79,8 +79,7 @@ install_git() {
 install_other_packages() {
   local packages=(
     "curl"
-    "zsh*"
-    "wezterm" 
+    "zsh"
     "gnome-tweaks"
     "btop"
     "hyfetch"
@@ -97,7 +96,6 @@ install_other_packages() {
     "build-essential"
     "node-typescript"
     "bat"
-    "exa"
     "nala"
     "vlc"
     "eza"
@@ -155,6 +153,54 @@ install_brave_browser() {
   install_packages brave-browser || log_error "Failed to install Brave browser"
 }
 
+# Function to install Ghostty terminal
+install_ghostty() {
+  echo "Installing Ghostty terminal..."
+  cd "$downloads_path" || log_error "Failed to change directory to $downloads_path"
+  
+  if [ ! -d "ghostty" ]; then
+    git clone https://github.com/mitchellh/ghostty.git --depth=1 || log_error "Failed to clone Ghostty repository"
+  fi
+  
+  cd ghostty || log_error "Failed to change directory to ghostty"
+  
+  # Install dependencies for building Ghostty
+  install_packages libgtk-4-dev libpango1.0-dev libglib2.0-dev libfontconfig-dev libgtkmm-4.0-dev zig || log_error "Failed to install Ghostty dependencies"
+  
+  # Build and install Ghostty
+  zig build -Doptimize=ReleaseSafe || log_error "Failed to build Ghostty"
+  
+  # Create a directory for the binary if it doesn't exist
+  if [ ! -d "$HOME/.local/bin" ]; then
+    mkdir -p "$HOME/.local/bin"
+  fi
+  
+  # Copy the binary to .local/bin
+  cp zig-out/bin/ghostty "$HOME/.local/bin/" || log_error "Failed to install Ghostty binary"
+  
+  # Add .local/bin to PATH if not already there
+  if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+  fi
+
+  # Create desktop entry
+  mkdir -p "$HOME/.local/share/applications"
+  cat > "$HOME/.local/share/applications/ghostty.desktop" << EOF
+[Desktop Entry]
+Name=Ghostty
+Comment=A fast, feature-rich terminal emulator
+Exec=$HOME/.local/bin/ghostty
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=Utility;TerminalEmulator;
+StartupNotify=true
+EOF
+
+  echo "Ghostty terminal has been installed."
+}
+
 # Function to install Snap packages
 install_snaps() {
   echo "Installing Snap packages..."
@@ -202,12 +248,6 @@ install_neovim() {
   fi
 }
 
-# Function to install wezterm repos
-install_wez() {
-  curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
-  echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' | sudo tee /etc/apt/sources.list.d/wezterm.list
-}
-
 # Function to download and execute a script
 download_and_execute() {
   local url=$1
@@ -239,7 +279,39 @@ install_debs() {
 # Function to install Oh My Zsh
 install_oh_my_zsh() {
   echo "Installing Oh My Zsh..."
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || log_error "Failed to install Oh My Zsh"
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended || log_error "Failed to install Oh My Zsh"
+  
+  # Install ZSH plugins
+  echo "Installing ZSH plugins..."
+  ZSH_CUSTOM=${ZSH_CUSTOM:-"$HOME/.oh-my-zsh/custom"}
+  
+  # zsh-syntax-highlighting
+  if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" || log_error "Failed to install zsh-syntax-highlighting"
+  fi
+  
+  # zsh-autosuggestions
+  if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
+    git clone https://github.com/zsh-users/zsh-autosuggestions.git "$ZSH_CUSTOM/plugins/zsh-autosuggestions" || log_error "Failed to install zsh-autosuggestions"
+  fi
+  
+  # zsh-autocomplete
+  if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autocomplete" ]; then
+    git clone https://github.com/marlonrichert/zsh-autocomplete.git "$ZSH_CUSTOM/plugins/zsh-autocomplete" || log_error "Failed to install zsh-autocomplete"
+  fi
+  
+  # Update .zshrc to include the plugins
+  if [ -f "$HOME/.zshrc" ]; then
+    # Backup the original file
+    cp "$HOME/.zshrc" "$HOME/.zshrc.bak-$(date +%Y%m%d-%H%M%S)" || log_error "Failed to backup .zshrc"
+    
+    # Update plugins line
+    sed -i 's/plugins=(git)/plugins=(git zsh-syntax-highlighting zsh-autosuggestions zsh-autocomplete)/g' "$HOME/.zshrc" || log_error "Failed to update .zshrc plugins"
+    
+    echo "ZSH plugins installed and configured."
+  else
+    log_error "No .zshrc file found after Oh My Zsh installation."
+  fi
 }
 
 # Check if the script has sudo privileges
@@ -256,7 +328,6 @@ remove_unwanted_packages
 echo "---------------------*******************************************************************-----------------------------------"
 echo "---------------------*******************************************************************-----------------------------------"
 install_git
-install_wez
 echo "---------------------*******************************************************************-----------------------------------"
 echo "---------------------*******************************************************************-----------------------------------"
 install_other_packages
@@ -281,6 +352,9 @@ install_neovim
 echo "---------------------*******************************************************************-----------------------------------"
 echo "---------------------*******************************************************************-----------------------------------"
 install_pop_shell
+echo "---------------------*******************************************************************-----------------------------------"
+echo "---------------------*******************************************************************-----------------------------------"
+install_ghostty
 echo "---------------------*******************************************************************-----------------------------------"
 echo "---------------------*******************************************************************-----------------------------------"
 install_oh_my_zsh
